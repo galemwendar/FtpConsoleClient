@@ -1,6 +1,8 @@
 ﻿using FluentFTP;
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 
 namespace FtpConsoleClient
@@ -25,7 +27,27 @@ namespace FtpConsoleClient
             {
                 ftp.AutoConnect();
                 ftp.Config.RetryAttempts = 10;
+                //var ftpObj = ftp.GetObjectInfo(remotePath);
+                //if(ftpObj.Type == FtpObjectType.File)
+                //{
+                //    var localPath = localRootFolder + item.FullName.Replace('/', '\\');
+                //    var localDir = Directory.GetParent(localPath);
+                //    if (!Directory.Exists(localDir.FullName))
+                //    {
+                //        Directory.CreateDirectory(localDir.FullName);
+                //    }
+
+                //    ftp.DownloadFile(localPath, item.FullName, FtpLocalExists.Resume, FtpVerify.Retry, progress);
+                //}
                 var list = ftp.GetListing(remotePath);
+                if (list.Count() == 0)
+                {
+                    var oldList = list;
+                    var ftpObj = ftp.GetObjectInfo(remotePath);
+                    list = new FtpListItem[oldList.Length + 1];
+                    list[0] = ftpObj;
+
+                }
                 foreach (var item in list)
                 {
                     Action<FtpProgress> progress = delegate (FtpProgress p)
